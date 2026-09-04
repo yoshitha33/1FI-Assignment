@@ -1,4 +1,23 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const rawApiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = rawApiBaseUrl.endsWith('/api')
+  ? rawApiBaseUrl
+  : `${rawApiBaseUrl.replace(/\/$/, '')}/api`;
+
+function normalizeCategory(category) {
+  if (!category) {
+    return '';
+  }
+
+  if (typeof category === 'string') {
+    return category;
+  }
+
+  if (typeof category === 'object') {
+    return category.value || category.label || category.name || '';
+  }
+
+  return String(category);
+}
 
 async function request(path, options = {}) {
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -19,7 +38,8 @@ async function request(path, options = {}) {
 }
 
 export function getProducts(category) {
-  const query = category ? `?category=${encodeURIComponent(category)}` : '';
+  const normalizedCategory = normalizeCategory(category);
+  const query = normalizedCategory ? `?category=${encodeURIComponent(normalizedCategory)}` : '';
   return request(`/products${query}`);
 }
 

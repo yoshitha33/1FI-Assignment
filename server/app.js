@@ -8,13 +8,30 @@ const { notFound, errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
 
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  'http://localhost:5173',
+  'https://localhost:5173',
+]
+  .filter(Boolean)
+  .flatMap((value) => value.split(',').map((item) => item.trim()).filter(Boolean));
+
+const corsOptions = {
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+
+    callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
+
 app.use(express.json());
-app.use(
-  cors({
-    origin: process.env.CLIENT_URL ? [process.env.CLIENT_URL] : true,
-    credentials: true,
-  })
-);
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(helmet());
 
 app.get('/', (req, res) => {
