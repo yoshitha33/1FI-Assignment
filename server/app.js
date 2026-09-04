@@ -17,6 +17,13 @@ app.use(
 );
 app.use(helmet());
 
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'EMI Marketplace API is running',
+  });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({
     success: true,
