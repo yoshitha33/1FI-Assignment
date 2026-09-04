@@ -8,17 +8,27 @@ const { notFound, errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
 
+function normalizeOrigin(value) {
+  if (!value) {
+    return '';
+  }
+
+  return value.trim().replace(/\/$/, '');
+}
+
 const allowedOrigins = [
   process.env.CLIENT_URL,
   'http://localhost:5173',
   'https://localhost:5173',
 ]
   .filter(Boolean)
-  .flatMap((value) => value.split(',').map((item) => item.trim()).filter(Boolean));
+  .flatMap((value) => value.split(',').map((item) => normalizeOrigin(item)).filter(Boolean));
 
 const corsOptions = {
   origin(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    const normalizedOrigin = normalizeOrigin(origin);
+
+    if (!normalizedOrigin || allowedOrigins.includes(normalizedOrigin)) {
       callback(null, true);
       return;
     }
